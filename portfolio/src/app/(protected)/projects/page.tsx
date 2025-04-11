@@ -1,5 +1,6 @@
 "use client";
 import AddProjectForm from "@/components/project/AddProjectForm";
+import ProjectCard from "@/components/project/ProjectCard";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +11,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { projectsList } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ProjectsPage() {
+  const {
+    data: projects,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["projects"],
+    queryFn: projectsList,
+  });
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between px-4 py-2">
@@ -38,6 +49,12 @@ export default function ProjectsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+      <div className="grid grid-cols-1 gap-4 px-4 py-2 md:grid-cols-2 lg:grid-cols-3">
+        {projects &&
+          projects.map((project: any, index: number) => (
+            <ProjectCard key={index} projectData={project.fields} />
+          ))}
       </div>
     </div>
   );

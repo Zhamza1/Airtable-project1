@@ -8,7 +8,7 @@ export const projectSchema = z.object({
   visuals: z.array(
     z.string().url({ message: "L'URL de l'image est invalide" })
   ),
-  promotion: z.string(),
+  class: z.string(),
 });
 
 export type ProjectSchemaType = z.infer<typeof projectSchema>;
