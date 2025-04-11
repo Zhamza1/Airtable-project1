@@ -59,3 +59,8 @@ export const registerAdmin = async (data: any) => {
     throw new Error("Failed to create user");
   }
 };
+
+export const projectsList = async () => {
+  const projects = await base("Project").select({}).all();
+  return projects;
+};
