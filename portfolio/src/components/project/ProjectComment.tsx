@@ -1,3 +1,4 @@
+import { CircleUser } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,12 +15,14 @@ export default function ProjectComment({
   content: string;
 }) {
   return (
-    <Card>
+    <Card className="min-w-lg bg-slate-50 dark:bg-slate-800">
       <CardHeader>
-        <CardTitle className="">{author}</CardTitle>
-        <CardDescription></CardDescription>
+        <CardTitle className="flex items-center">
+          <CircleUser className="inline mr-2" />
+          {author}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="">{content}</CardContent>
+      <CardContent className="font-medium">{content}</CardContent>
     </Card>
   );
 }
