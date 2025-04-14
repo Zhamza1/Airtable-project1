@@ -3,7 +3,6 @@ import { MessageSquare, ThumbsUp } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 import Link from "next/link";
-import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -15,8 +14,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -81,31 +78,35 @@ export default function ProjectCard({ projectData }: ProjectCardProps) {
               J'aimes : {projectData.likes}
             </p>
           </span>
-          <span className="">
-            <Dialog>
-              <DialogTrigger asChild>
-                <span className="flex gap-1 justify-center cursor-pointer box-border transition-transform duration-100 ease-out hover:-translate-y-1">
-                  <MessageSquare className="w-6 text-blue-800" />
-                  <p className="text-lg text-slate-500 underline">
-                    Commentaires : {projectData.comments?.length}
-                  </p>
-                </span>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>
-                    Commentaires du projet {projectData.name}
-                  </DialogTitle>
-                </DialogHeader>
-                {projectData.comments?.map((comment) => (
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <span className="flex gap-1 justify-center cursor-pointer box-border transition-transform duration-100 ease-out hover:-translate-y-1">
+                <MessageSquare className="w-6 text-blue-800" />
+                <p className="text-lg text-slate-500 underline">
+                  Commentaires : {projectData.comments?.length}
+                </p>
+              </span>
+            </DialogTrigger>
+            <DialogContent className="min-w-fit">
+              <DialogHeader>
+                <DialogTitle>
+                  Commentaires du projet {projectData.name}
+                </DialogTitle>
+              </DialogHeader>
+              {projectData.author_comment?.map((comment, index) => {
+                const author = comment.split(":")[0];
+                const content = comment.split(":")[1];
+                return (
                   <ProjectComment
-                    author={comment.author}
-                    content={comment.content}
+                    key={index}
+                    author={author}
+                    content={content}
                   />
-                ))}
-              </DialogContent>
-            </Dialog>
-          </span>
+                );
+              })}
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="flex flex-col items-start gap-0.5">

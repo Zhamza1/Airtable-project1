@@ -14,6 +14,7 @@ export interface Project {
   creator_name?: string;
   student_names?: string[];
   category_name?: string;
+  author_comment?: string[];
 }
 
 export interface ProjectCardProps {
