@@ -32,10 +32,7 @@ export default function StudentsPage() {
                                 Créez un nouvel étudiant en remplissant le formulaire ci-dessous.
                             </DialogDescription>
                         </DialogHeader>
-                        <AddStudentForm />
-                        <DialogFooter>
-                            <Button type="submit">Enregistrer</Button>
-                        </DialogFooter>
+                        <AddStudentForm/>
                     </DialogContent>
                 </Dialog>
             </div>
