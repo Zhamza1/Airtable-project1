@@ -1,23 +1,28 @@
 "use client";
 
-import {useEffect, useState} from "react";
-import {Button} from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
+    DialogTrigger,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
-import {MoreVertical} from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 
-import {CategorySchemaType} from "@/schemas/categorySchema";
-import {TechnologySchemaType} from "@/schemas/technologySchema";
+import { CategorySchemaType } from "@/schemas/categorySchema";
+import { TechnologySchemaType } from "@/schemas/technologySchema";
 
-import {AddCategoryForm} from "@/components/category/AddCategoryForm";
-import {AddTechnologyForm} from "@/components/technology/AddTechnologyForm";
+import { AddCategoryForm } from "@/components/category/AddCategoryForm";
+import { AddTechnologyForm } from "@/components/technology/AddTechnologyForm";
 
 export type Category = CategorySchemaType & { id: string };
 export type Technology = TechnologySchemaType & { id: string };
@@ -29,18 +34,17 @@ export default function ReferentielsPage() {
     const [loadingTech, setLoadingTech] = useState(true);
     const [errorCat, setErrorCat] = useState<string | null>(null);
     const [errorTech, setErrorTech] = useState<string | null>(null);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [editingTech, setEditingTech] = useState<Technology | null>(null);
+
     const [createCatOpen, setCreateCatOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [createTechOpen, setCreateTechOpen] = useState(false);
+    const [editingTech, setEditingTech] = useState<Technology | null>(null);
 
     useEffect(() => {
         async function loadAll() {
             try {
                 const res = await fetch("/api/category");
-                if (!res.ok) {
-                    throw new Error((await res.json()).message);
-                }
+                if (!res.ok) throw new Error((await res.json()).message);
                 setCategories(await res.json());
             } catch (err: any) {
                 setErrorCat(err.message);
@@ -50,9 +54,7 @@ export default function ReferentielsPage() {
 
             try {
                 const res = await fetch("/api/technology");
-                if (!res.ok) {
-                    throw new Error((await res.json()).message);
-                }
+                if (!res.ok) throw new Error((await res.json()).message);
                 setTechnologies(await res.json());
             } catch (err: any) {
                 setErrorTech(err.message);
@@ -60,30 +62,37 @@ export default function ReferentielsPage() {
                 setLoadingTech(false);
             }
         }
-
         loadAll();
     }, []);
+
 
     const handleCreateCategory = async (data: CategorySchemaType) => {
         const res = await fetch("/api/category", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setCategories((prev) => [...prev, payload]);
+        setCreateCatOpen(false);
     };
 
     const handleUpdateCategory = async (data: CategorySchemaType) => {
         if (!editingCategory) return;
         const res = await fetch(`/api/category/${editingCategory.id}`, {
             method: "PATCH",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setCategories((prev) =>
             prev.map((c) => (c.id === payload.id ? payload : c))
         );
@@ -92,32 +101,43 @@ export default function ReferentielsPage() {
 
     const handleDeleteCategory = async (id: string) => {
         if (!confirm("Voulez-vous vraiment supprimer cette catégorie ?")) return;
-        const res = await fetch(`/api/category/${id}`, {method: "DELETE"});
+        const res = await fetch(`/api/category/${id}`, { method: "DELETE" });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setCategories((prev) => prev.filter((c) => c.id !== id));
     };
+
 
     const handleCreateTech = async (data: TechnologySchemaType) => {
         const res = await fetch("/api/technology", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setTechnologies((prev) => [...prev, payload]);
+        setCreateTechOpen(false);
     };
 
     const handleUpdateTech = async (data: TechnologySchemaType) => {
         if (!editingTech) return;
         const res = await fetch(`/api/technology/${editingTech.id}`, {
             method: "PATCH",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setTechnologies((prev) =>
             prev.map((t) => (t.id === payload.id ? payload : t))
         );
@@ -126,14 +146,17 @@ export default function ReferentielsPage() {
 
     const handleDeleteTech = async (id: string) => {
         if (!confirm("Voulez-vous vraiment supprimer cette technologie ?")) return;
-        const res = await fetch(`/api/technology/${id}`, {method: "DELETE"});
+        const res = await fetch(`/api/technology/${id}`, { method: "DELETE" });
         const payload = await res.json();
-        if (!res.ok) return alert(`Erreur : ${payload.message}`);
+        if (!res.ok) {
+            alert(`Erreur : ${payload.message}`);
+            return;
+        }
         setTechnologies((prev) => prev.filter((t) => t.id !== id));
     };
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col space-y-6">
             <div className="flex items-center justify-between px-4 py-2">
                 <div>
                     <h1 className="text-2xl font-bold">Référentiels</h1>
@@ -149,7 +172,7 @@ export default function ReferentielsPage() {
                                 <DialogTitle>Nouvelle catégorie</DialogTitle>
                                 <DialogDescription>Créez une catégorie.</DialogDescription>
                             </DialogHeader>
-                            <AddCategoryForm onSubmit={handleCreateCategory}/>
+                            <AddCategoryForm onSubmit={handleCreateCategory} />
                         </DialogContent>
                     </Dialog>
 
@@ -162,7 +185,7 @@ export default function ReferentielsPage() {
                                 <DialogTitle>Nouvelle technologie</DialogTitle>
                                 <DialogDescription>Créez une technologie.</DialogDescription>
                             </DialogHeader>
-                            <AddTechnologyForm onSubmit={handleCreateTech}/>
+                            <AddTechnologyForm onSubmit={handleCreateTech} />
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -189,12 +212,12 @@ export default function ReferentielsPage() {
                             <tbody className="bg-white divide-y divide-gray-200">
                             {categories.map((c) => (
                                 <tr key={c.id}>
-                                    <td className="px-4 py-3 whitespace-nowrap">{c.name}</td>
+                                    <td className="px-4 py-3">{c.name}</td>
                                     <td className="px-4 py-3 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-4 w-4"/>
+                                                    <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -217,7 +240,7 @@ export default function ReferentielsPage() {
 
             <Dialog
                 open={!!editingCategory}
-                onOpenChange={(o) => !o && setEditingCategory(null)}
+                onOpenChange={(open) => !open && setEditingCategory(null)}
             >
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -254,12 +277,12 @@ export default function ReferentielsPage() {
                             <tbody className="bg-white divide-y divide-gray-200">
                             {technologies.map((t) => (
                                 <tr key={t.id}>
-                                    <td className="px-4 py-3 whitespace-nowrap">{t.name}</td>
+                                    <td className="px-4 py-3">{t.name}</td>
                                     <td className="px-4 py-3 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-4 w-4"/>
+                                                    <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -282,7 +305,7 @@ export default function ReferentielsPage() {
 
             <Dialog
                 open={!!editingTech}
-                onOpenChange={(o) => !o && setEditingTech(null)}
+                onOpenChange={(open) => !open && setEditingTech(null)}
             >
                 <DialogContent className="sm-max-w-[425px]">
                     <DialogHeader>

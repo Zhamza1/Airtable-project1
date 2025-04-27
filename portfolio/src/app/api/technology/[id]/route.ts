@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getTechnologyByName} from "@/lib/api";
 
 type Fields = { name: string };
 
@@ -12,6 +13,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             { status: 400 }
         );
     }
+
+    const existing = await getTechnologyByName(name);
+    if (existing && existing.id !== id) {
+        return NextResponse.json(
+            { message: "Cette technologie existe déjà." },
+            { status: 400 }
+        );
+    }
+
     try {
         const [updated] = await base<Fields>("Technologies").update([
             { id, fields: { name } },

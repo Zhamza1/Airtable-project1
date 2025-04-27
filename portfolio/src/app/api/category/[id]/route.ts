@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getCategoryByName} from "@/lib/api";
 
 type Fields = { name: string };
 
@@ -9,6 +10,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (!name) {
         return NextResponse.json(
             { message: "Le nom de la catégorie est requis." },
+            { status: 400 }
+        );
+    }
+
+    const existing = await getCategoryByName(name);
+    if (existing && existing.id !== id) {
+        return NextResponse.json(
+            { message: "Cette catégorie existe déjà." },
             { status: 400 }
         );
     }

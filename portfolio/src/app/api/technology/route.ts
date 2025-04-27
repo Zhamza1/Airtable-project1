@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getTechnologyByName} from "@/lib/api";
 
 interface Technology {
     id: string;
@@ -34,6 +35,15 @@ export async function POST(req: Request) {
             { status: 400 }
         );
     }
+
+    const existing = await getTechnologyByName(name);
+    if (existing) {
+        return NextResponse.json(
+            { message: "Cette technologie existe déjà." },
+            { status: 400 }
+        );
+    }
+
     try {
         const [created] = await base<Fields>("Technologies").create([
             { fields: { name } },
