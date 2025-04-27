@@ -1,30 +1,16 @@
-"use client";
+ "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { registerSchema, RegisterSchema } from "@/schemas/authSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+ import {Button} from "@/components/ui/button";
+ import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card";
+ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
+ import {Input} from "@/components/ui/input";
+ import {registerSchema, RegisterSchema} from "@/schemas/authSchema";
+ import {zodResolver} from "@hookform/resolvers/zod";
+ import {useMutation} from "@tanstack/react-query";
+ import {useRouter} from "next/navigation";
+ import {useForm} from "react-hook-form";
 
-export default function RegisterPage() {
+ export default function RegisterPage() {
   const router = useRouter();
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
