@@ -64,3 +64,4 @@ export const projectsList = async () => {
   const projects = await base("Project").select({}).all();
   return projects;
 };
+
