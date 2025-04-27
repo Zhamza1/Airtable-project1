@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getCategoryByName} from "@/lib/api";
 
 interface Category {
     id: string;
@@ -31,6 +32,14 @@ export async function POST(req: Request) {
     if (!name) {
         return NextResponse.json(
             { message: "Le nom de la catégorie est requis." },
+            { status: 400 }
+        );
+    }
+
+    const existing = await getCategoryByName(name);
+    if (existing) {
+        return NextResponse.json(
+            { message: "Cette catégorie existe déjà." },
             { status: 400 }
         );
     }

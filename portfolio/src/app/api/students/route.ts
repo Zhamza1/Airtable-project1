@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getStudentByEmail} from "@/lib/api";
 
 type Fields = {
     firstName: string;
@@ -23,7 +24,6 @@ export async function GET() {
             ...r.fields,
         }));
 
-        console.log(students);
         return NextResponse.json(students);
     } catch (err) {
         console.error("GET /api/students error:", err);
@@ -37,6 +37,21 @@ export async function GET() {
 export async function POST(req: Request) {
     const { firstName, lastName, email, promotion } =
         (await req.json()) as Fields;
+
+    if (!firstName || !lastName || !email || !promotion) {
+        return NextResponse.json(
+            { message: "Tous les champs sont requis." },
+            { status: 400 }
+        );
+    }
+
+    const existing = await getStudentByEmail(email);
+    if (existing) {
+        return NextResponse.json(
+            { message: "Cet email est déjà utilisé." },
+            { status: 400 }
+        );
+    }
 
     try {
         const [created] = await base<Fields>("Student").create([

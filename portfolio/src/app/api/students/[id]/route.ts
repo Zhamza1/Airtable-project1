@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { base } from "@/utils/airtable";
+import {getStudentByEmail} from "@/lib/api";
 
 type Fields = {
     firstName: string;
@@ -15,6 +16,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (!firstName || !lastName || !email || !promotion) {
         return NextResponse.json(
             { message: "Tous les champs sont requis." },
+            { status: 400 }
+        );
+    }
+
+    const existing = await getStudentByEmail(email);
+    if (existing && existing.id !== id) {
+        return NextResponse.json(
+            { message: "Cet email est déjà utilisé par un autre étudiant." },
             { status: 400 }
         );
     }

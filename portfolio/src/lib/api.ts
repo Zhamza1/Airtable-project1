@@ -1,9 +1,37 @@
-import { AdminRecord } from "@/types/auth";
-import { base } from "@/utils/airtable";
+import {base} from "@/utils/airtable";
 
-export const getStudents = async () => {
-  const students = await base("Student").select({}).all();
-  return students;
+
+export const getCategoryByName = async (name: string)=> {
+  const escaped = name.replace(/'/g, "\\'");
+  const records = await base("Category")
+      .select({
+        filterByFormula: `{name}='${escaped}'`,
+        maxRecords: 1,
+      })
+      .firstPage();
+  return records[0] ?? null;
+};
+
+export const getTechnologyByName = async (name: string) => {
+  const escaped = name.replace(/'/g, "\\'");
+  const records = await base("Technologies")
+      .select({
+        filterByFormula: `{name}='${escaped}'`,
+        maxRecords: 1,
+      })
+      .firstPage();
+  return records[0] ?? null;
+};
+
+export const getStudentByEmail = async (email: string ) => {
+  const escaped = email.replace(/'/g, "\\'");
+  const records = await base("Student")
+      .select({
+        filterByFormula: `{email}='${escaped}'`,
+        maxRecords: 1,
+      })
+      .firstPage();
+  return records[0] ?? null;
 };
 
 export const getUserByEmail = async (email: string) => {
