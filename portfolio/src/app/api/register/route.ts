@@ -1,15 +1,14 @@
-import { getUserByEmail, registerAdmin } from "@/lib/api";
-import { AdminRecord } from "@/types/auth";
+import {getUserByEmail, registerAdmin} from "@/lib/api";
 import bcrypt from "bcrypt";
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextResponse } from "next/server";
+import {NextApiResponse} from "next";
+import {NextResponse} from "next/server";
 
 export async function POST(req: Request, res: NextApiResponse) {
   const { email, name, password } = await req.json();
 
   if (!email || !name || !password) {
     return new NextResponse(
-      JSON.stringify("Veulliez remplir tout les champs requis !"),
+      JSON.stringify("Veuillez remplir tout les champs requis !"),
       {
         status: 400,
       }
