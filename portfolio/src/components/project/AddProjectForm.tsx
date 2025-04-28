@@ -16,6 +16,13 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export default function AddProjectForm({
   technologiesData,
@@ -79,7 +86,7 @@ export default function AddProjectForm({
       }
       return res.json();
     },
-    onSuccess: (response) => {
+    onSuccess: (_response) => {
       toast.success("Projet créé avec succès !");
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setOpen(false);
@@ -213,9 +220,30 @@ export default function AddProjectForm({
           name="class"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Classe</FormLabel>
+              <FormLabel htmlFor="class">Classe</FormLabel>
               <FormControl>
-                <Input placeholder="Classe" {...field} />
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="class" className="w-full">
+                    <SelectValue placeholder="Sélectionner la classe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Première Année">
+                      Première Année
+                    </SelectItem>
+                    <SelectItem value="Deuxième Année">
+                      Deuxième Année
+                    </SelectItem>
+                    <SelectItem value="Troisième Année">
+                      Troisième Année
+                    </SelectItem>
+                    <SelectItem value="Quatrième Année">
+                      Quatrième Année
+                    </SelectItem>
+                    <SelectItem value="Cinquième Année">
+                      Cinquième Année
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
