@@ -64,7 +64,7 @@ export const projectsList = async () => {
   return projects;
 };
 export const getProjects = async () => {
-  const projects = await base("Project").select({}).all();
+  const projects = await base('Project').select({}).all();
   return projects.map((record: any) => ({
     id: record.id,
     ...record.fields,
