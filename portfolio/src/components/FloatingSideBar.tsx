@@ -1,4 +1,3 @@
-import { GalleryVerticalEnd } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -13,6 +12,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { Button } from "./ui/button";
 
 interface sideBarItem {
   title: string;

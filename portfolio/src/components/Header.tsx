@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
-import Image from "next/image";
 
 const navLinks = [
   {
@@ -26,15 +26,7 @@ const Header = () => {
     <nav className="fixed mx-auto border border-[#33353F] top-0 left-0 right-0 z-10 bg-[#121212] bg-opacity-100">
       <div className="flex container lg:py-4 flex-wrap items-center justify-between mx-auto px-4 py-2">
         {/* Logo remplacé par l'image d'Ismail */}
-        <Link href="/" className="flex items-center">
-          <img
-            src="https://media.licdn.com/dms/image/v2/C4E03AQGnrEycAkfRHw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1653404526132?e=1751500800&v=beta&t=TlVfztlPiF3lxoOe2E8vJobVGEOif4zqIYg-HG8kOfU"
-            alt="Ismail Mrabet"
-            width={50}
-            height={50}
-            className="rounded-full border-2 border-white"
-          />
-        </Link>
+        <Link href="/" className="flex items-center"></Link>
 
         <div className="mobile-menu block md:hidden">
           {!navbarOpen ? (

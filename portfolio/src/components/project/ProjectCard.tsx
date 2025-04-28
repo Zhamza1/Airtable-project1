@@ -22,7 +22,9 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getUserByEmail } from "@/lib/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import ProjectComment from "./ProjectComment";
 import ProjectVisualsCarousel from "./ProjectVisualsCarousel";
@@ -33,6 +35,8 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   const [deletDialogOpen, setDeletDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [newComment, setNewComment] = useState("");
+  const session = useSession();
 
   const { mutate: projectDelete } = useMutation({
     mutationFn: async (id: string) => {
@@ -48,6 +52,44 @@ export default function ProjectCard({
     onError: (error: any) => {
       setDeletDialogOpen(false);
       toast.error(error?.message || "Erreur lors de la suppression du projet");
+    },
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      return await getUserByEmail(session?.data?.user?.email as string);
+    },
+  });
+
+  const { mutate: addComment, isPending: isAdding } = useMutation({
+    mutationFn: async (commentText: string) => {
+      const payload = {
+        text: commentText,
+        project: [projectId],
+        admin: user && [user[0].id],
+      };
+
+      const res = await fetch(`/api/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Échec de l'ajout du commentaire");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Commentaire ajouté !");
+      setNewComment("");
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erreur lors de l'ajout du commentaire");
     },
   });
   const handleDelete = async (id: string) => {
@@ -170,6 +212,22 @@ export default function ProjectCard({
                   />
                 );
               })}
+              <div className="flex flex-col gap-2">
+                <textarea
+                  className="w-full p-2 border rounded"
+                  rows={3}
+                  placeholder="Ton commentaire…"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => addComment(newComment)}
+                  disabled={!newComment.trim() || isAdding}
+                >
+                  {isAdding ? "Envoi…" : "Envoyer"}
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
         </div>
