@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -44,9 +43,6 @@ export default function ProjectsPage() {
               </DialogDescription>
             </DialogHeader>
             <AddProjectForm />
-            <DialogFooter>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

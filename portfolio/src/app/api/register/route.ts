@@ -1,7 +1,6 @@
 import { getUserByEmail, registerAdmin } from "@/lib/api";
-import { AdminRecord } from "@/types/auth";
 import bcrypt from "bcrypt";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request, res: NextApiResponse) {
@@ -17,7 +16,7 @@ export async function POST(req: Request, res: NextApiResponse) {
   }
 
   const user = await getUserByEmail(email);
-  if (user.length > 0) {
+  if (user) {
     return new NextResponse(JSON.stringify("Cet e-mail existe déjà"), {
       status: 400,
     });
@@ -31,7 +30,7 @@ export async function POST(req: Request, res: NextApiResponse) {
       password: passwordHash,
     };
     const createdUser = await registerAdmin(newUser);
-    return new NextResponse(newUser.name, {
+    return new NextResponse(JSON.stringify("Inscritpion réussi !"), {
       status: 201,
     });
   } catch (error) {
@@ -39,6 +38,5 @@ export async function POST(req: Request, res: NextApiResponse) {
     return new NextResponse(JSON.stringify("Failed to create user"), {
       status: 500,
     });
-    //return res.status(500).json({ message:  "Failed to create user"});
   }
 }
