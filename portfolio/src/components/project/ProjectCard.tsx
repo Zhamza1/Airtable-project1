@@ -1,8 +1,11 @@
 import { ProjectCardProps } from "@/types/project";
-import { MessageSquare, ThumbsUp } from "lucide-react";
+import { MessageSquare, ThumbsUp, Trash2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 
+import { DialogDescription } from "@radix-ui/react-dialog";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -18,14 +21,76 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import ProjectComment from "./ProjectComment";
 import ProjectVisualsCarousel from "./ProjectVisualsCarousel";
 
-export default function ProjectCard({ projectData }: ProjectCardProps) {
+export default function ProjectCard({
+  projectData,
+  projectId,
+}: ProjectCardProps) {
+  const [deletDialogOpen, setDeletDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { mutate: projectDelete } = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/project/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      setDeletDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success("Projet supprimé !");
+    },
+    onError: (error: any) => {
+      setDeletDialogOpen(false);
+      toast.error(error?.message || "Erreur lors de la suppression du projet");
+    },
+  });
+  const handleDelete = async (id: string) => {
+    projectDelete(id);
+  };
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">{projectData.name}</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span className="text-xl">{projectData.name}</span>
+          <div>
+            <Dialog open={deletDialogOpen} onOpenChange={setDeletDialogOpen}>
+              <DialogTrigger asChild>
+                <Trash2 className="h-6 w-6 hover:text-red-500 hover:cursor-pointer" />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirmer la suppression</DialogTitle>
+                  <DialogDescription>
+                    Cette action supprimera définitivement le projet et ne peut
+                    pas être annulée.
+                  </DialogDescription>
+                </DialogHeader>
+                <p>Êtes-vous sûr de vouloir supprimer ce projet ?</p>
+                <div className="flex items-center justify-end mt-4 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setDeletDialogOpen(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDelete(projectId)}
+                  >
+                    Supprimer
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardTitle>
+
         <CardDescription>{projectData.description}</CardDescription>
       </CardHeader>
       <hr />

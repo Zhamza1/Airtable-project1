@@ -1,8 +1,10 @@
 import { projectSchema, ProjectSchemaType } from "@/schemas/projectSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { MultiSelect } from "../MultiSelect";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import {
@@ -15,22 +17,38 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 
-export default function AddProjectForm() {
+export default function AddProjectForm({
+  technologiesData,
+  categoriesData,
+  studentsData,
+  setOpen,
+}: {
+  technologiesData: { id: string; name: string }[];
+  categoriesData: { id: string; name: string }[];
+  studentsData: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    promotion: string;
+  }[];
+  setOpen: (open: boolean) => void;
+}) {
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
+  const queryClient = useQueryClient();
 
   const form = useForm<ProjectSchemaType>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
       description: "",
-      technology: "",
+      technology: [],
       link: "",
       visuals: [],
       class: "",
-      creator: "",
-      student: "",
-      category: "",
-    },
+      student: [],
+      category: [],
+    } as any,
   });
 
   const {
@@ -40,34 +58,13 @@ export default function AddProjectForm() {
     error,
   } = useMutation({
     mutationFn: async (data: ProjectSchemaType) => {
-      // Upload visuals
-      const attachments = await Promise.all(
-        (data.visuals as File[]).map(async (file) => {
-          const formData = new FormData();
-          formData.append("file", file);
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-          const json = await res.json();
-          return { url: json.url, filename: file.name };
-        })
-      );
+      const attachments = (data.visuals as File[]).map(async (file) => {
+        return { url: "https://v5.airtableusercontent.com/" + file.name };
+      });
 
-      // Prepare payload
       const payload = {
-        name: data.name,
-        description: data.description,
-        technology:
-          typeof data.technology === "string"
-            ? data.technology.split(",").map((t) => t.trim())
-            : data.technology,
-        link: data.link,
+        ...data,
         visuals: attachments,
-        class: data.class,
-        creator: data.creator,
-        student: data.student,
-        category: data.category,
       };
 
       const res = await fetch("/api/project", {
@@ -77,21 +74,18 @@ export default function AddProjectForm() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(
-          error.message || "Erreur lors de la création du projet"
-        );
+        const err = await res.json();
+        throw new Error(err.message || "Erreur lors de la création du projet");
       }
       return res.json();
     },
     onSuccess: (response) => {
-      console.log("Projet créé avec succès", response);
-      form.reset();
-      setFilePreviews([]);
+      toast.success("Projet créé avec succès !");
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setOpen(false);
     },
   });
 
-  // Handle file selection and preview
   const handleFileChange = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
@@ -99,9 +93,7 @@ export default function AddProjectForm() {
     setFilePreviews(fileArray.map((f) => URL.createObjectURL(f)));
   };
 
-  const onSubmit = (values: ProjectSchemaType) => {
-    projectCreate(values);
-  };
+  const onSubmit = (values: ProjectSchemaType) => projectCreate(values);
 
   return (
     <Form {...form}>
@@ -147,7 +139,24 @@ export default function AddProjectForm() {
             <FormItem>
               <FormLabel>Technologies</FormLabel>
               <FormControl>
-                <Input placeholder="React, Node.js, etc." {...field} />
+                <MultiSelect
+                  options={technologiesData.map((tech) => ({
+                    label: tech.name,
+                    value: tech.id,
+                  }))}
+                  onValueChange={field.onChange}
+                  defaultValue={
+                    Array.isArray(field.value)
+                      ? field.value
+                      : field.value
+                      ? [field.value]
+                      : []
+                  }
+                  placeholder="Select options"
+                  variant="inverted"
+                  animation={2}
+                  maxCount={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -167,29 +176,37 @@ export default function AddProjectForm() {
             </FormItem>
           )}
         />
-
-        <FormItem>
-          <FormLabel>Visuels</FormLabel>
-          <FormControl>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => handleFileChange(e.target.files)}
-            />
-          </FormControl>
-          <div className="flex space-x-2 mt-2">
-            {filePreviews.map((src) => (
-              <img
-                key={src}
-                src={src}
-                alt="Preview"
-                className="w-20 h-20 object-cover rounded"
-              />
-            ))}
-          </div>
-          <FormMessage />
-        </FormItem>
+        <FormField
+          control={form.control}
+          name="visuals"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Visuels</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  onChange={(e) => handleFileChange(e.target.files)}
+                />
+              </FormControl>
+              <div className="flex space-x-2 mt-2">
+                {filePreviews.map((src) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                ))}
+              </div>{" "}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -207,26 +224,29 @@ export default function AddProjectForm() {
 
         <FormField
           control={form.control}
-          name="creator"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Créateur</FormLabel>
-              <FormControl>
-                <Input placeholder="ID créateur" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="student"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Étudiant</FormLabel>
               <FormControl>
-                <Input placeholder="ID étudiant" {...field} />
+                <MultiSelect
+                  options={studentsData.map((student) => ({
+                    label: student.firstName + " " + student.lastName,
+                    value: student.id,
+                  }))}
+                  onValueChange={field.onChange}
+                  defaultValue={
+                    Array.isArray(field.value)
+                      ? field.value
+                      : field.value
+                      ? [field.value]
+                      : []
+                  }
+                  placeholder="Select options"
+                  variant="inverted"
+                  animation={2}
+                  maxCount={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -240,7 +260,24 @@ export default function AddProjectForm() {
             <FormItem>
               <FormLabel>Catégorie</FormLabel>
               <FormControl>
-                <Input placeholder="ID catégorie" {...field} />
+                <MultiSelect
+                  options={categoriesData.map((tech) => ({
+                    label: tech.name,
+                    value: tech.id,
+                  }))}
+                  onValueChange={field.onChange}
+                  defaultValue={
+                    Array.isArray(field.value)
+                      ? field.value
+                      : field.value
+                      ? [field.value]
+                      : []
+                  }
+                  placeholder="Sélectionner une catégorie"
+                  variant="inverted"
+                  animation={2}
+                  maxCount={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
