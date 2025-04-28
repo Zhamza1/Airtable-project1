@@ -1,0 +1,14 @@
+services:
+  next:
+    build:
+      context: ./portfolio
+      dockerfile: Dockerfile
+    container_name: next_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./portfolio:/usr/app/portfolio
+      - /usr/app/portfolio/node_modules
+    command: /bin/sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=${NODE_ENV}
