@@ -11,9 +11,8 @@ type ProjectsDonutProps = {
 
 export function DonutChart({ labels, data }: ProjectsDonutProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full min-w-0 aspect-square flex items-center justify-center mx-auto max-w-[220px] sm:max-w-[300px] md:max-w-[350px]">
       <Doughnut
-        className="w-full h-full"
         data={{
           labels,
           datasets: [
@@ -32,13 +31,12 @@ export function DonutChart({ labels, data }: ProjectsDonutProps) {
           ],
         }}
         options={{
+          responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { position: "bottom" },
           },
         }}
-        width={undefined}
-        height={undefined}
       />
     </div>
   );

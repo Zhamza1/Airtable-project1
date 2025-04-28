@@ -2,11 +2,19 @@ import { NextResponse } from "next/server";
 import { getProjects, getComments, getStudents, getCategories, getTechnologies } from "@/lib/api";
 
 export async function GET() {
-  const projects = await getProjects();
-  const comments = await getComments();
-  const students = await getStudents();
-  const categories = await getCategories();
-  const technologies = await getTechnologies();
+  const [
+    projects,
+    comments,
+    students,
+    categories,
+    technologies,
+  ] = await Promise.all([
+    getProjects(),
+    getComments(),
+    getStudents(),
+    getCategories(),
+    getTechnologies(),
+  ]);
 
 
   const totalProjects = projects.length;
@@ -24,7 +32,7 @@ export async function GET() {
     // If category is a linked record, it's usually an array of IDs
     const catIds = Array.isArray(p.category) ? p.category : [p.category];
     catIds.forEach((catId) => {
-      const catName = categoryMap[catId] || "Other";
+      const catName = categoryMap[catId] || "Autre";
       projectsByCategory[catName] = (projectsByCategory[catName] || 0) + 1;
     });
   });
@@ -38,7 +46,7 @@ export async function GET() {
     const techIds = Array.isArray(p.technology) ? p.technology : [p.technology];
     
     techIds.forEach((techId) => {
-      const techName = techMap[techId] || "Other";
+      const techName = techMap[techId] || "Autre";
       technologiesUsage[techName] = (technologiesUsage[techName] || 0) + 1;
     });
   });
@@ -53,7 +61,7 @@ export async function GET() {
   // Build a map of studentId -> promotion
   const studentPromotionMap: Record<string, string> = {};
   students.forEach((student) => {
-    studentPromotionMap[student.id] = student.fields.promotion || "Unknown";
+    studentPromotionMap[student.id] = student.promotion || "Inconnue";
   });
 
   // Aggregate likes by promotion
@@ -62,7 +70,7 @@ export async function GET() {
     // p.student may be a linked record (array of IDs) or a single ID
     const studentIds = Array.isArray(p.student) ? p.student : [p.student];
     studentIds.forEach((studentId) => {
-      const promo = studentPromotionMap[studentId] || "Unknown";
+      const promo = studentPromotionMap[studentId] || "Inconnue";
       likesByPromotion[promo] = (likesByPromotion[promo] || 0) + (p.likes || 0);
     });
   });

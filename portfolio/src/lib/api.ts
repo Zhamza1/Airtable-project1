@@ -1,5 +1,12 @@
 import {base} from "@/utils/airtable";
 
+export const getStudents = async () => {
+  const students = await base('Student').select({}).all();
+  return students.map((record: any) => ({
+    id: record.id,
+    ...record.fields,
+  }));
+};
 
 export const getCategoryByName = async (name: string)=> {
   const escaped = name.replace(/'/g, "\\'");
@@ -61,7 +68,7 @@ export const registerAdmin = async (data: any) => {
 };
 
 export const getProjects = async () => {
-  const projects = await base("Project").select({}).all();
+  const projects = await base('Project').select({}).all();
   return projects.map((record: any) => ({
     id: record.id,
     ...record.fields,
