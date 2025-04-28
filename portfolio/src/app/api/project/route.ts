@@ -9,9 +9,8 @@ type Fields = {
   link: string;
   visuals: AirtableImageProps[];
   class: string;
-  creator: string;
-  student: string;
-  category: string;
+  student: string[];
+  category: string[];
   comments?: string[];
 };
 
@@ -28,7 +27,6 @@ export async function GET() {
       link: r.fields.link,
       visuals: r.fields.visuals,
       class: r.fields.class,
-      creator: r.fields.creator,
       student: r.fields.student,
       category: r.fields.category,
       comments: r.fields.comments,
@@ -52,7 +50,6 @@ export async function POST(req: Request) {
     "link",
     "visuals",
     "class",
-    "creator",
     "student",
     "category",
   ];
@@ -69,6 +66,8 @@ export async function POST(req: Request) {
       { fields: payload },
     ]);
 
+    console.log("Created project:", created);
+
     const project: Project & { id: string } = {
       id: created.id,
       name: created.fields.name,
@@ -77,7 +76,6 @@ export async function POST(req: Request) {
       link: created.fields.link,
       visuals: created.fields.visuals,
       class: created.fields.class,
-      creator: created.fields.creator,
       student: created.fields.student,
       category: created.fields.category,
       comments: created.fields.comments,

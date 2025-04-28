@@ -1,13 +1,14 @@
 export interface Project {
+  id: string;
   name: string;
   description: string;
   technology: string[];
   link: string;
   visuals: AirtableImageProps[];
   class: string;
-  creator: string;
-  student: string;
-  category: string;
+  creator?: string;
+  student: string[];
+  category: string[];
   comments?: string[];
   likes?: number;
   list_technos?: string[];
@@ -19,6 +20,7 @@ export interface Project {
 
 export interface ProjectCardProps {
   projectData: Project;
+  projectId: string;
 }
 
 export interface AirtableImageProps {
