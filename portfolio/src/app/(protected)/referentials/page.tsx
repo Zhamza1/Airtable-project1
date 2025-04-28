@@ -16,7 +16,8 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { CategorySchemaType } from "@/schemas/categorySchema";
 import { TechnologySchemaType } from "@/schemas/technologySchema";
@@ -37,8 +38,15 @@ export default function ReferentielsPage() {
 
     const [createCatOpen, setCreateCatOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
     const [createTechOpen, setCreateTechOpen] = useState(false);
     const [editingTech, setEditingTech] = useState<Technology | null>(null);
+
+    const [deleteCatOpen, setDeleteCatOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+
+    const [deleteTechOpen, setDeleteTechOpen] = useState(false);
+    const [technologyToDelete, setTechnologyToDelete] = useState<Technology | null>(null);
 
     useEffect(() => {
         async function loadAll() {
@@ -51,7 +59,6 @@ export default function ReferentielsPage() {
             } finally {
                 setLoadingCat(false);
             }
-
             try {
                 const res = await fetch("/api/technology");
                 if (!res.ok) throw new Error((await res.json()).message);
@@ -65,7 +72,6 @@ export default function ReferentielsPage() {
         loadAll();
     }, []);
 
-
     const handleCreateCategory = async (data: CategorySchemaType) => {
         const res = await fetch("/api/category", {
             method: "POST",
@@ -74,10 +80,11 @@ export default function ReferentielsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setCategories((prev) => [...prev, payload]);
+        toast.success("Catégorie créée !");
         setCreateCatOpen(false);
     };
 
@@ -90,26 +97,38 @@ export default function ReferentielsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setCategories((prev) =>
             prev.map((c) => (c.id === payload.id ? payload : c))
         );
+        toast.success("Catégorie mise à jour !");
         setEditingCategory(null);
     };
 
-    const handleDeleteCategory = async (id: string) => {
-        if (!confirm("Voulez-vous vraiment supprimer cette catégorie ?")) return;
-        const res = await fetch(`/api/category/${id}`, { method: "DELETE" });
-        const payload = await res.json();
-        if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
-            return;
-        }
-        setCategories((prev) => prev.filter((c) => c.id !== id));
+    const confirmDeleteCategory = (c: Category) => {
+        setCategoryToDelete(c);
+        setDeleteCatOpen(true);
     };
 
+    const handleDeleteCategory = async () => {
+        if (!categoryToDelete) return;
+        const res = await fetch(`/api/category/${categoryToDelete.id}`, {
+            method: "DELETE",
+        });
+        const payload = await res.json();
+        if (!res.ok) {
+            toast.error(payload.message);
+        } else {
+            setCategories((prev) =>
+                prev.filter((c) => c.id !== categoryToDelete.id)
+            );
+            toast.success("Catégorie supprimée !");
+        }
+        setDeleteCatOpen(false);
+        setCategoryToDelete(null);
+    };
 
     const handleCreateTech = async (data: TechnologySchemaType) => {
         const res = await fetch("/api/technology", {
@@ -119,10 +138,11 @@ export default function ReferentielsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setTechnologies((prev) => [...prev, payload]);
+        toast.success("Technologie créée !");
         setCreateTechOpen(false);
     };
 
@@ -135,24 +155,37 @@ export default function ReferentielsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setTechnologies((prev) =>
             prev.map((t) => (t.id === payload.id ? payload : t))
         );
+        toast.success("Technologie mise à jour !");
         setEditingTech(null);
     };
 
-    const handleDeleteTech = async (id: string) => {
-        if (!confirm("Voulez-vous vraiment supprimer cette technologie ?")) return;
-        const res = await fetch(`/api/technology/${id}`, { method: "DELETE" });
+    const confirmDeleteTech = (t: Technology) => {
+        setTechnologyToDelete(t);
+        setDeleteTechOpen(true);
+    };
+
+    const handleDeleteTech = async () => {
+        if (!technologyToDelete) return;
+        const res = await fetch(`/api/technology/${technologyToDelete.id}`, {
+            method: "DELETE",
+        });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
-            return;
+            toast.error(payload.message);
+        } else {
+            setTechnologies((prev) =>
+                prev.filter((t) => t.id !== technologyToDelete.id)
+            );
+            toast.success("Technologie supprimée !");
         }
-        setTechnologies((prev) => prev.filter((t) => t.id !== id));
+        setDeleteTechOpen(false);
+        setTechnologyToDelete(null);
     };
 
     return (
@@ -193,8 +226,7 @@ export default function ReferentielsPage() {
 
             <section className="px-4 py-2">
                 <h2 className="text-xl font-semibold mb-2">Catégories</h2>
-                {loadingCat ? (<p>Chargement…</p>) : errorCat ? (
-                    <p className="text-red-600">Erreur : {errorCat}</p>) : (
+                {loadingCat ? (<p>Chargement…</p>) : errorCat ? (<p className="text-red-600">Erreur : {errorCat}</p>) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -224,7 +256,7 @@ export default function ReferentielsPage() {
                                                 <DropdownMenuItem onSelect={() => setEditingCategory(c)}>
                                                     Modifier
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleDeleteCategory(c.id)}>
+                                                <DropdownMenuItem onSelect={() => confirmDeleteCategory(c)}>
                                                     Supprimer
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -238,11 +270,8 @@ export default function ReferentielsPage() {
                 )}
             </section>
 
-            <Dialog
-                open={!!editingCategory}
-                onOpenChange={(open) => !open && setEditingCategory(null)}
-            >
-                <DialogContent className="sm:max-w-[425px]">
+            <Dialog open={!!editingCategory} onOpenChange={(o) => !o && setEditingCategory(null)}>
+                <DialogContent className="sm-max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Modifier catégorie</DialogTitle>
                         <DialogDescription>Mettez à jour la catégorie.</DialogDescription>
@@ -256,10 +285,37 @@ export default function ReferentielsPage() {
                 </DialogContent>
             </Dialog>
 
+            <Dialog
+                open={deleteCatOpen}
+                onOpenChange={(o) => !o && setDeleteCatOpen(false)}
+            >
+                <DialogContent className="sm-max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Supprimer la catégorie ?</DialogTitle>
+                        <DialogDescription>
+                            Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteCatOpen(false)}
+                        >
+                            Annuler
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteCategory}
+                        >
+                            <Trash2 className="w-4 h-4 mr-1" /> Supprimer
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <section className="px-4 py-2">
                 <h2 className="text-xl font-semibold mb-2">Technologies</h2>
-                {loadingTech ? (<p>Chargement…</p>) : errorTech ? (<p className="text-red-600">Erreur : {errorTech}</p>
-                ) : (
+                {loadingTech ? (<p>Chargement…</p>) : errorTech ? (<p className="text-red-600">Erreur : {errorTech}</p>) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -286,12 +342,8 @@ export default function ReferentielsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onSelect={() => setEditingTech(t)}>
-                                                    Modifier
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleDeleteTech(t.id)}>
-                                                    Supprimer
-                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setEditingTech(t)}>Modifier</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => confirmDeleteTech(t)}>Supprimer</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </td>
@@ -303,21 +355,45 @@ export default function ReferentielsPage() {
                 )}
             </section>
 
-            <Dialog
-                open={!!editingTech}
-                onOpenChange={(open) => !open && setEditingTech(null)}
-            >
+            <Dialog open={!!editingTech} onOpenChange={(o) => !o && setEditingTech(null)}>
                 <DialogContent className="sm-max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Modifier technologie</DialogTitle>
-                        <DialogDescription>Mettez à jour la technologie.</DialogDescription>
+                        <DialogDescription>
+                            Mettez à jour la technologie.
+                        </DialogDescription>
                     </DialogHeader>
                     {editingTech && (
-                        <AddTechnologyForm
-                            initialData={editingTech}
-                            onSubmit={handleUpdateTech}
-                        />
+                        <AddTechnologyForm initialData={editingTech} onSubmit={handleUpdateTech}/>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={deleteTechOpen}
+                onOpenChange={(o) => !o && setDeleteTechOpen(false)}
+            >
+                <DialogContent className="sm-max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Supprimer la technologie ?</DialogTitle>
+                        <DialogDescription>
+                            Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteTechOpen(false)}
+                        >
+                            Annuler
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteTech}
+                        >
+                            <Trash2 className="w-4 h-4 mr-1" /> Supprimer
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

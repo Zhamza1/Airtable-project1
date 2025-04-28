@@ -20,7 +20,6 @@ export default function RootLayout({
           <QueryClientProvider client={queryClient}>
             {children}
             <Toaster richColors />
-            <Footer />
             <ReactQueryDevtools position="bottom" initialIsOpen={false} />
           </QueryClientProvider>
         </SessionProvider>

@@ -16,7 +16,7 @@ export async function POST(req: Request, res: NextApiResponse) {
   }
 
   const user = await getUserByEmail(email);
-  if (user) {
+  if (user.length > 0) {
     return new NextResponse(JSON.stringify("Cet e-mail existe déjà"), {
       status: 400,
     });
