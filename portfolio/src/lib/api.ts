@@ -59,3 +59,35 @@ export const registerAdmin = async (data: any) => {
     throw new Error("Failed to create user");
   }
 };
+
+export const getProjects = async () => {
+  const projects = await base("Project").select({}).all();
+  return projects.map((record: any) => ({
+    id: record.id,
+    ...record.fields,
+  }));
+};
+
+export const getComments = async () => {
+  const comments = await base("Comment").select({}).all();
+  return comments.map((record: any) => ({
+    id: record.id,
+    ...record.fields,
+  }));
+};
+
+export const getCategories = async () => {
+  const categories = await base("Category").select({}).all();
+  return categories.map((record: any) => ({
+    id: record.id,
+    ...record.fields,
+  }));
+};
+
+export const getTechnologies = async () => {
+  const technologies = await base("Technologies").select({}).all();
+  return technologies.map((record: any) => ({
+    id: record.id,
+    ...record.fields,
+  }));
+};
