@@ -21,6 +21,7 @@ import { loginSchema, LoginSchema } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { signIn, SignInResponse } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 export default function LoginPage() {
@@ -31,6 +32,7 @@ export default function LoginPage() {
       password: "",
     },
   });
+  const router = useRouter();
 
   const {
     mutate: login,
@@ -52,7 +54,7 @@ export default function LoginPage() {
     },
     mutationKey: ["login"],
     onSuccess: (response) => {
-      console.log("Login successful", response);
+      if (response.url) router.push(response.url);
     },
   });
 

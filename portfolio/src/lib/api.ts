@@ -1,36 +1,35 @@
-import {base} from "@/utils/airtable";
+import { base } from "@/utils/airtable";
 
-
-export const getCategoryByName = async (name: string)=> {
+export const getCategoryByName = async (name: string) => {
   const escaped = name.replace(/'/g, "\\'");
   const records = await base("Category")
-      .select({
-        filterByFormula: `{name}='${escaped}'`,
-        maxRecords: 1,
-      })
-      .firstPage();
+    .select({
+      filterByFormula: `{name}='${escaped}'`,
+      maxRecords: 1,
+    })
+    .firstPage();
   return records[0] ?? null;
 };
 
 export const getTechnologyByName = async (name: string) => {
   const escaped = name.replace(/'/g, "\\'");
   const records = await base("Technologies")
-      .select({
-        filterByFormula: `{name}='${escaped}'`,
-        maxRecords: 1,
-      })
-      .firstPage();
+    .select({
+      filterByFormula: `{name}='${escaped}'`,
+      maxRecords: 1,
+    })
+    .firstPage();
   return records[0] ?? null;
 };
 
-export const getStudentByEmail = async (email: string ) => {
+export const getStudentByEmail = async (email: string) => {
   const escaped = email.replace(/'/g, "\\'");
   const records = await base("Student")
-      .select({
-        filterByFormula: `{email}='${escaped}'`,
-        maxRecords: 1,
-      })
-      .firstPage();
+    .select({
+      filterByFormula: `{email}='${escaped}'`,
+      maxRecords: 1,
+    })
+    .firstPage();
   return records[0] ?? null;
 };
 
@@ -64,4 +63,3 @@ export const projectsList = async () => {
   const projects = await base("Project").select({}).all();
   return projects;
 };
-
