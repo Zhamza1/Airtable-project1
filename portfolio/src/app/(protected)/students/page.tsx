@@ -1,19 +1,25 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import AddStudentForm from "@/components/student/AddStudentForm";
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
+    DialogTrigger,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
-import {MoreVertical} from "lucide-react";
-import {StudentSchemaType} from "@/schemas/studentSchema";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { StudentSchemaType } from "@/schemas/studentSchema";
 
 export type Student = StudentSchemaType & { id: string };
 
@@ -24,13 +30,14 @@ export default function StudentsPage() {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
 
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+
     useEffect(() => {
         async function load() {
             try {
                 const res = await fetch("/api/students");
-                if (!res.ok) {
-                    throw new Error((await res.json()).message);
-                }
+                if (!res.ok) throw new Error((await res.json()).message);
                 setStudents(await res.json());
             } catch (err: any) {
                 setError(err.message);
@@ -49,10 +56,11 @@ export default function StudentsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setStudents((prev) => [...prev, payload]);
+        toast.success("Étudiant créé !");
         setCreateOpen(false);
     };
 
@@ -65,24 +73,37 @@ export default function StudentsPage() {
         });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
+            toast.error(payload.message);
             return;
         }
         setStudents((prev) =>
             prev.map((s) => (s.id === payload.id ? payload : s))
         );
+        toast.success("Étudiant mis à jour !");
         setEditingStudent(null);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Voulez-vous vraiment supprimer cet étudiant ?")) return;
-        const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
+    const confirmDelete = (student: Student) => {
+        setStudentToDelete(student);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!studentToDelete) return;
+        const res = await fetch(`/api/students/${studentToDelete.id}`, {
+            method: "DELETE",
+        });
         const payload = await res.json();
         if (!res.ok) {
-            alert(`Erreur : ${payload.message}`);
-            return;
+            toast.error(payload.message);
+        } else {
+            setStudents((prev) =>
+                prev.filter((s) => s.id !== studentToDelete.id)
+            );
+            toast.success("Étudiant supprimé !");
         }
-        setStudents((prev) => prev.filter((s) => s.id !== id));
+        setDeleteDialogOpen(false);
+        setStudentToDelete(null);
     };
 
     return (
@@ -108,20 +129,21 @@ export default function StudentsPage() {
                 </Dialog>
             </div>
 
-            <div className="px-4 py-2">
-                {loading ? (<p>Chargement…</p>) : error ? (<p className="text-red-600">Erreur : {error}</p>) : (
+            <div className="px-4 py-2">{loading ? (<p>Chargement…</p>) : error ? (<p className="text-red-600">Erreur : {error}</p>) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                             <tr>
-                                {["Prénom", "Nom", "Email", "Promotion", "Actions"].map((h) => (
-                                    <th
-                                        key={h}
-                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                                    >
-                                        {h}
-                                    </th>
-                                ))}
+                                {["Prénom", "Nom", "Email", "Promotion", "Actions"].map(
+                                    (h) => (
+                                        <th
+                                            key={h}
+                                            className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                                        >
+                                            {h}
+                                        </th>
+                                    )
+                                )}
                             </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -143,12 +165,8 @@ export default function StudentsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onSelect={() => setEditingStudent(s)}>
-                                                    Modifier
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleDelete(s.id)}>
-                                                    Supprimer
-                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setEditingStudent(s)}>Modifier</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => confirmDelete(s)}>Supprimer</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </td>
@@ -177,6 +195,28 @@ export default function StudentsPage() {
                             onSubmit={handleUpdate}
                         />
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={(o) => !o && setDeleteDialogOpen(false)}
+            >
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Supprimer l'étudiant ?</DialogTitle>
+                        <DialogDescription>
+                            Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                            Annuler
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            <Trash2 className="w-4 h-4 mr-1" /> Supprimer
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
